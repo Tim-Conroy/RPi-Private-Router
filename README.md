@@ -24,7 +24,7 @@ Internet -> Home router -> RPi (wlan1 | wlan0) -> Your devices
 | Home router | Gives the RPi an address and internet | Home 192.168.1.0/24 | 192.168.1.1 |
 | RPi `wlan1` | Joins the home Wi-Fi like a laptop would | Home 192.168.1.0/24 | 192.168.1.50 |
 | RPi `wlan0` | Broadcasts the private Wi-Fi network | Private 10.10.10.0/24 | 10.10.10.1 |
-| Laptop / phone | Join the RPi's private Wi-Fi | Private 10.10.10.0/24 | 10.10.10.23 / .24 |
+| Laptop / phone | Join the RPi's private Wi-Fi | Private 10.10.10.0/24 | 10.10.10.23 /24 |
 
 All addresses are examples. The home and private ranges must not overlap. If your home network already uses `10.10.10.x`, pick another private range such as `10.20.30.0/24`.
 
