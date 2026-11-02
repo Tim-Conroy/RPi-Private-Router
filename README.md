@@ -82,6 +82,14 @@ Want more? [The Firebog](https://firebog.net/) keeps a curated directory. Its gr
 
 ---
 
+## Next: WireGuard VPN
+
+Take your Pi-hole with you. The **[WireGuard VPN guide](wireguard/README.md)** adds a secure tunnel back to your Raspberry Pi router, so your phone or laptop is protected on public Wi-Fi and keeps Pi-hole ad blocking away from home.
+
+It includes ready-to-run scripts for the server setup and for adding devices with a QR code, plus an example nftables ruleset. The VPN needs exactly one forwarded port (UDP 51820), which fits the "no unnecessary port forwarding" rule above.
+
+---
+
 ## Videos
 
 - **Part 1 of 2**: Setting up Pi-hole: [YOUR PART 1 VIDEO LINK]
