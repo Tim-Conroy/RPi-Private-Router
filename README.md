@@ -103,4 +103,4 @@ It includes ready-to-run scripts for the server setup and for adding devices wit
 ## Videos
 
 - **Part 1 of 2**: Setting up Pi-hole: https://youtu.be/I8HdF6vV1IE
-- **Part 2 of 2**: [YOUR PART 2 VIDEO LINK]
+- **Part 2 of 2**: https://youtu.be/LijS5LekkVc
