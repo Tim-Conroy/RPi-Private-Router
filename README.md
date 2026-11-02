@@ -2,7 +2,7 @@
 
 Network-wide ad, tracker, and malware blocking for your home network using [Pi-hole](https://pi-hole.net/).
 
-> 📺 **New here?** Watch **Part 1 of 2** on my YouTube channel for the full setup: [YOUR PART 1 VIDEO LINK]
+> 📺 **New here?** Watch **Part 1 of 2** on my YouTube channel for the full setup: https://youtu.be/I8HdF6vV1IE
 
 ---
 
