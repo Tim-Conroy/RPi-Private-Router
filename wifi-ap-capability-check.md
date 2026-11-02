@@ -2,7 +2,7 @@
 
 ## 1. Purpose
 
-This procedure checks whether the Raspberry Pi's wireless hardware and driver advertise support for **Wi-Fi Access Point (AP) mode**.
+This procedure checks whether the Wi-Fi adapter that will host your private network advertises support for **Wi-Fi Access Point (AP) mode**.
 
 For the TravelPi Router project, this is an important prerequisite because the Raspberry Pi 5 is intended to:
 
@@ -11,9 +11,14 @@ For the TravelPi Router project, this is an important prerequisite because the R
 - Run Pi-hole for DNS filtering.
 - Route traffic between the private network and the upstream connection.
 
-**Operating system:** Raspberry Pi OS  
+**Operating system:** Raspberry Pi OS Trixie  
 **Hardware:** Raspberry Pi 5  
-**Wireless interface:** `wlan0`
+**Wireless interfaces:**
+
+| Interface | Role |
+|---|---|
+| `wlan0` | Upstream: the Pi's built-in Wi-Fi, connected to the home router |
+| `wlan1` | Access point: the private network, run by hostapd |
 
 > **Safety note:** These commands are diagnostic only. They do not change network interfaces, routing, firewall rules, or the existing home network.
 
@@ -23,16 +28,16 @@ For the TravelPi Router project, this is an important prerequisite because the R
 
 Open a terminal on the Raspberry Pi.
 
-Verify that the wireless interface exists:
+Verify that both wireless interfaces exist:
 
 ```bash
-ip link show wlan0
+ip -br link
 ```
 
-List available network interfaces:
+You should see both `wlan0` and `wlan1` in the list. If `wlan1` is missing, check that the second Wi-Fi adapter is plugged in and recognized:
 
 ```bash
-ls /sys/class/net
+lsusb
 ```
 
 Check that the `iw` utility is installed:
@@ -50,32 +55,29 @@ sudo apt install iw
 
 ---
 
-## 3. The Original Bash For Loop
+## 3. Run the Check
 
-Run the following script to check whether `wlan0`'s associated wireless PHY advertises AP mode support.
+Run the following commands to check whether `wlan1`'s wireless radio advertises AP mode support.
 
 ```bash
-for i in $(ls /sys/class/net | grep wlan0); do
-    p=$(cat /sys/class/net/$i/phy80211/name)
-
-    iw phy $p info | grep -q '\* AP$' \
-    && echo "$i ($p): AP supported" \
-    || echo "$i ($p): no AP"
-done
+p=$(cat /sys/class/net/wlan1/phy80211/name)
+iw phy "$p" info | grep -q '\* AP$' && echo "wlan1 ($p): AP supported" || echo "wlan1 ($p): no AP"
 ```
+
+To check another interface, replace both `wlan1`s with its name.
 
 ### Expected output
 
 Example when AP mode is advertised:
 
 ```text
-wlan0 (phy0): AP supported
+wlan1 (phy1): AP supported
 ```
 
 Example when the check does not find AP mode:
 
 ```text
-wlan0 (phy0): no AP
+wlan1 (phy1): no AP
 ```
 
 The output depends on the wireless hardware, driver, and system configuration.
@@ -84,55 +86,41 @@ The output depends on the wireless hardware, driver, and system configuration.
 
 ## 4. Line-by-Line Explanation
 
-### Step 1: Find the wireless interface
+### Line 1: Identify the physical wireless radio
 
 ```bash
-for i in $(ls /sys/class/net | grep wlan0); do
+p=$(cat /sys/class/net/wlan1/phy80211/name)
 ```
 
-- `ls /sys/class/net` lists the network interfaces.
-- `grep wlan0` filters the list for names containing `wlan0`.
-- `$(...)` executes a command and substitutes its output.
-- `for i in ...; do` assigns each matching name to the variable `i`.
-
-For this project, the expected value is:
-
-```text
-i=wlan0
-```
-
-### Step 2: Identify the physical wireless radio
-
-```bash
-p=$(cat /sys/class/net/$i/phy80211/name)
-```
-
-- `$i` expands to the interface name.
-- `cat` reads the wireless PHY name associated with that interface.
+- `/sys/class/net/wlan1/phy80211/name` is a small file the kernel creates for every Wi-Fi interface. It holds the name of the radio behind it.
+- `cat` reads that file.
+- `$(...)` runs a command and substitutes its output.
 - `p=$(...)` stores the result in the variable `p`.
 
 Example:
 
 ```text
-p=phy0
+p=phy1
 ```
 
 The PHY represents the underlying wireless radio. Multiple wireless interfaces can sometimes share the same PHY.
 
-### Step 3: Inspect supported wireless modes
+### Line 2: Inspect supported modes and display the result
 
 ```bash
-iw phy $p info | grep -q '\* AP$'
+iw phy "$p" info | grep -q '\* AP$' && echo "wlan1 ($p): AP supported" || echo "wlan1 ($p): no AP"
 ```
 
-- `iw phy $p info` displays information about the wireless PHY.
+**The search:**
+
+- `iw phy "$p" info` displays information about the wireless PHY. The quotes around `$p` are a good habit: they keep the value in one piece.
 - `|` passes the output to the next command.
 - `grep -q` searches quietly and returns a status code.
 - `\*` matches a literal asterisk.
 - `AP` identifies Access Point mode.
-- `$` anchors the match to the end of a line.
+- `$` anchors the match to the end of a line, so `* AP/VLAN` doesn't count.
 
-The script checks for a line ending in:
+The check looks for a line ending in:
 
 ```text
 * AP
@@ -140,29 +128,11 @@ The script checks for a line ending in:
 
 If the pattern is found, `grep` returns success. Otherwise, it returns failure.
 
-### Step 4: Display the result
+**The result:**
 
-```bash
-&& echo "$i ($p): AP supported" \
-|| echo "$i ($p): no AP"
-```
-
-- `&&` executes the first `echo` if the preceding command succeeds.
-- `||` executes the second `echo` if the preceding command fails.
+- `&&` runs the first `echo` if `grep` succeeded.
+- `||` runs the second `echo` if `grep` failed.
 - `echo` prints the result.
-- `\` continues a command onto the next line.
-
-The result indicates whether the script found the AP mode entry.
-
-### Step 5: Finish the loop
-
-```bash
-done
-```
-
-The `done` keyword marks the end of the loop.
-
-Bash repeats the loop body for each matching interface name.
 
 ---
 
@@ -170,23 +140,22 @@ Bash repeats the loop body for each matching interface name.
 
 | Syntax | Meaning |
 |---|---|
-| `$i` | Expands the value of variable `i` |
+| `$p` | Expands the value of variable `p` |
+| `"$p"` | Same, kept as one piece even if it contains spaces |
 | `$(command)` | Executes a command and captures its output |
 | `\|` | Pipes output into another command |
 | `&&` | Executes the next command when the previous command succeeds |
 | `\|\|` | Executes the next command when the previous command fails |
-| `\` | Continues a command onto the next line |
 | `grep -q` | Searches without printing matching lines |
-| `done` | Ends a loop |
 
 ---
 
 ## 6. Alternative Diagnostic Command
 
-A simpler way to inspect supported wireless interface modes is:
+A shorter way to see the supported modes for `wlan1`'s radio:
 
 ```bash
-iw list | grep -A 15 "Supported interface modes"
+iw phy "$(cat /sys/class/net/wlan1/phy80211/name)" info | grep -A 10 "Supported interface modes"
 ```
 
 Look for an entry similar to:
@@ -201,13 +170,7 @@ Supported interface modes:
 
 The presence of `* AP` means the wireless PHY advertises Access Point mode.
 
-For a more focused view of the supported modes, use:
-
-```bash
-iw list
-```
-
-Then locate the `Supported interface modes` section.
+To see everything for every radio at once, run `iw list` and scroll to each `Supported interface modes` section.
 
 ---
 
@@ -217,27 +180,22 @@ A successful AP capability check does **not** guarantee that the complete Travel
 
 The project requires two wireless roles:
 
-1. **Upstream client mode:** Connect to the existing home router.
-2. **Access Point mode:** Broadcast a private Wi-Fi network for client devices.
+1. **Upstream client mode** on `wlan0`: connect to the existing home router.
+2. **Access Point mode** on `wlan1`: broadcast a private Wi-Fi network for client devices.
 
-The ability to perform both roles simultaneously depends on the adapter, driver, and supported wireless interface combinations.
+Because each role has its own radio, they don't compete:
 
-Inspect the relevant capabilities with:
+- The access point can use any channel, independent of the home router's channel.
+- You don't need the radio to support client and AP at the same time.
 
-```bash
-iw list
-```
+> **Single-radio setups:** if you ever run both roles on one adapter (for example, a virtual AP on the built-in Wi-Fi), the radio must support both at once (`valid interface combinations` in `iw list`), and the access point is locked to the **same channel** as the upstream network. That's the most common surprise with one-radio travel routers.
 
-Look for the `valid interface combinations` section, if present.
+Additional checks for `wlan1`:
 
-Additional checks may be necessary to confirm:
+- Whether the adapter's driver is included in Raspberry Pi OS or needs to be installed.
+- Whether hostapd starts cleanly on it (see Troubleshooting).
 
-- Whether the radio supports concurrent client and AP operation.
-- Whether the driver permits the required combination.
-- Whether the wireless channels must match.
-- Whether the access point can be configured without disrupting the upstream connection.
-
-Do not change the existing Wi-Fi connection until these capabilities have been verified.
+Do not change the existing Wi-Fi connection on `wlan0` until these capabilities have been verified.
 
 ---
 
@@ -245,13 +203,11 @@ Do not change the existing Wi-Fi connection until these capabilities have been v
 
 Use this checklist before proceeding with access point configuration.
 
-- [ ] Confirm `wlan0` exists.
+- [ ] Confirm `wlan0` and `wlan1` both exist.
 - [ ] Confirm the `iw` utility is installed.
-- [ ] Identify the wireless PHY associated with `wlan0`.
-- [ ] Confirm whether AP mode is advertised.
-- [ ] Inspect `valid interface combinations`, if available.
-- [ ] Verify whether simultaneous client and AP operation is supported.
-- [ ] Record the existing upstream connection and default route.
+- [ ] Identify the wireless PHY associated with `wlan1`.
+- [ ] Confirm AP mode is advertised on `wlan1`.
+- [ ] Record the existing upstream connection on `wlan0` and the default route (`ip route`).
 - [ ] Plan firewall and routing changes before applying them.
 - [ ] Preserve the existing home network configuration.
 
@@ -264,10 +220,10 @@ Use this checklist before proceeding with access point configuration.
 Check whether the interface has an associated PHY:
 
 ```bash
-ls -l /sys/class/net/wlan0/phy80211/
+ls -l /sys/class/net/wlan1/phy80211/
 ```
 
-If the directory is missing, verify that `wlan0` is a wireless interface and that the wireless driver has loaded.
+If the directory is missing, verify that `wlan1` is a wireless interface and that the adapter's driver has loaded (`lsusb`, then `dmesg | grep -i wlan1`).
 
 ### Result: `no AP`
 
@@ -277,7 +233,7 @@ Inspect the complete capability list:
 iw list
 ```
 
-If AP mode is absent, do not assume that the adapter can host the private Wi-Fi network. Investigate the hardware and driver before proceeding.
+If AP mode is absent, do not assume that the adapter can host the private Wi-Fi network. Investigate the hardware and driver before proceeding, or choose an adapter known to support AP mode on Linux.
 
 ### Result: `AP supported`, but the access point does not start
 
@@ -292,7 +248,7 @@ iw dev
 ```
 
 ```bash
-journalctl -b | grep -Ei 'wlan0|hostapd|wifi|firmware'
+journalctl -b | grep -Ei 'wlan1|hostapd|wifi|firmware'
 ```
 
 These commands help investigate radio blocking, existing wireless interfaces, service errors, and driver or firmware messages.
@@ -306,11 +262,11 @@ Record the test results here.
 | Item | Result |
 |---|---|
 | Raspberry Pi model | Raspberry Pi 5 |
-| Operating system | Raspberry Pi OS |
-| Wireless interface | `wlan0` |
-| Associated PHY | To be verified |
-| AP mode advertised | To be verified |
-| Concurrent client + AP support | To be verified |
+| Operating system | Raspberry Pi OS Trixie |
+| Upstream interface | `wlan0` (built-in Wi-Fi) |
+| Access point interface | `wlan1` |
+| Associated PHY for `wlan1` | To be recorded |
+| AP mode advertised on `wlan1` | To be recorded |
 | Pi-hole | Working |
 | Firewall and routing | Verify before deployment |
 
@@ -320,11 +276,10 @@ Record the test results here.
 
 Once the wireless capabilities have been verified, proceed with the TravelPi Router configuration plan:
 
-1. Confirm the upstream Wi-Fi connection.
-2. Determine whether the existing wireless adapter can handle both roles.
-3. Configure the private access point.
-4. Configure DHCP and DNS for the private network.
-5. Verify Pi-hole integration.
-6. Configure forwarding and firewall rules.
-7. Test private-network isolation and internet connectivity.
-8. Confirm the existing home network remains unaffected.
+1. Confirm the upstream Wi-Fi connection on `wlan0`.
+2. Configure the private access point on `wlan1`.
+3. Configure DHCP and DNS for the private network.
+4. Verify Pi-hole integration.
+5. Configure forwarding and firewall rules.
+6. Test private-network isolation and internet connectivity.
+7. Confirm the existing home network remains unaffected.

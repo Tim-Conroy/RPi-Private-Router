@@ -1,7 +1,19 @@
 # WireGuard on a Raspberry Pi 5 router (Trixie + Pi-hole + nftables)
 
 Assumes: Pi 5 on Raspberry Pi OS Trixie, already routing with hostapd + dnsmasq + nftables, Pi-hole installed.
-Defaults: WAN `eth0`, LAN `wlan0`, VPN subnet `10.10.0.0/24`, port `51820/udp`. Change them in all three files if yours differ.
+
+Defaults (the RPi Private Router layout):
+
+| Setting | Value |
+|---|---|
+| Upstream (internet) | `wlan0`, Wi-Fi link to your home router |
+| Private network | `wlan1`, the hostapd access point |
+| VPN subnet | `10.10.0.0/24` (Pi = `10.10.0.1`) |
+| VPN port | `51820/udp` |
+
+Check yours with `ip -br a`. Interface names only appear in `nftables.conf`; the subnet and port are set at the top of both scripts.
+
+> **Where the Pi must be:** a WireGuard *server* needs an inbound port, so this works while the Pi is on your home network. On hotel or public Wi-Fi nobody can forward a port to it.
 
 ## 1. Install and start the server
 ```bash
@@ -16,7 +28,7 @@ Merge the `### WG` lines from `nftables.conf` into your `/etc/nftables.conf`, th
 sudo nft -c -f /etc/nftables.conf      # syntax check, changes nothing
 sudo systemctl restart nftables
 ```
-Do this from a LAN device, not over SSH from the internet, in case of a typo.
+Do this from a device on the private network (or the Pi's own keyboard), not over SSH through the VPN, in case of a typo.
 
 ## 3. Let Pi-hole answer VPN clients
 Check Pi-hole's listening mode (Settings > DNS > Interface settings, or):
@@ -32,7 +44,7 @@ Also confirm only one thing owns port 53: `sudo ss -lunp | grep ':53 '` should s
 
 ## 4. Reach the Pi from the internet
 1. **Check for CGNAT:** compare the WAN IP on your ISP router with what https://ifconfig.me shows. If they differ (or the router shows `100.64.x.x`–`100.127.x.x`), port forwarding won't work; use Tailscale instead.
-2. **Port forward** UDP 51820 on the ISP router to the Pi's WAN-side IP.
+2. **Port forward** UDP 51820 on your home router to the Pi's `wlan0` address (`ip -br a show wlan0`). Reserve that address in the home router so it never changes. If your ISP modem is a separate box in front of the home router, forward on both (double NAT).
 3. **Dynamic DNS** with DuckDNS (free): create a subdomain, then add to root's crontab (`sudo crontab -e`):
    ```
    */5 * * * * curl -s "https://www.duckdns.org/update?domains=YOURNAME&token=YOURTOKEN&ip=" >/dev/null
@@ -54,6 +66,6 @@ Scan the QR code in the WireGuard app. One client per device; don't share config
 | Symptom | Likely cause |
 |---|---|
 | No handshake | Port forward missing/wrong, CGNAT, wrong endpoint hostname, or the `udp dport 51820` rule missing |
-| Handshake but no internet | Forward rule `wg0 -> eth0` or masquerade missing; `ip_forward` off |
+| Handshake but no internet | Forward rule `wg0 -> wlan0` or masquerade missing; `ip_forward` off |
 | Internet works by IP but not names | Pi-hole listening mode is `SINGLE`, or DNS line in client config wrong |
-| Works at home, not on cellular | Testing from inside the LAN; test on cellular with Wi-Fi off |
+| Works at home, not on cellular | Testing from inside your home network; test on cellular with Wi-Fi off |

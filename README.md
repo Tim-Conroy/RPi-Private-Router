@@ -4,6 +4,16 @@ Network-wide ad, tracker, and malware blocking for your home network using [Pi-h
 
 > 📺 **New here?** Watch **Part 1 of 2** on my YouTube channel for the full setup: https://youtu.be/I8HdF6vV1IE
 
+## Project guides
+
+This repo is part of the **RPi Private Router** series: a Raspberry Pi 5 that joins your home Wi-Fi on `wlan0` and broadcasts its own private, ad-free network on `wlan1`.
+
+| Step | Guide |
+|---|---|
+| 1 | [Wi-Fi access point capability check](wifi-ap-capability-check.md) |
+| 2 | [Install Pi-hole, step by step](Pi-hole-Installation-Guide.md) |
+| 3 | [WireGuard VPN: Pi-hole and a safe tunnel home, from anywhere](wireguard/README.md) |
+
 ---
 
 ## ⚠️ Know this first: Pi-hole blocks domains, not hackers
@@ -92,5 +102,5 @@ It includes ready-to-run scripts for the server setup and for adding devices wit
 
 ## Videos
 
-- **Part 1 of 2**: Setting up Pi-hole: [YOUR PART 1 VIDEO LINK]
+- **Part 1 of 2**: Setting up Pi-hole: https://youtu.be/I8HdF6vV1IE
 - **Part 2 of 2**: [YOUR PART 2 VIDEO LINK]

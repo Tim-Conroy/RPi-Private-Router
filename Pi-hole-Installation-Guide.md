@@ -282,7 +282,7 @@ Use the **arrow keys** to move, **Space** to pick, **Enter** to continue. The mo
 
 | Question | Choose | Why |
 |---|---|---|
-| Network interface | `eth0` or `wlan0` | `eth0` = cable, `wlan0` = Wi-Fi |
+| Network interface | `eth0` or `wlan0` | `eth0` = cable, `wlan0` = Wi-Fi. On the RPi Private Router, pick `wlan1` (the access point) |
 | Upstream DNS | Cloudflare or Quad9 | Answers the allowed lookups |
 | Blocklist | Yes | A good starter list of ad sites |
 | Query logging | Yes | Fills the dashboard graphs |
@@ -321,6 +321,20 @@ In your laptop's network settings, set DNS to `192.168.1.50`. Only that laptop u
 In the router's DHCP or LAN settings, set the DNS server to `192.168.1.50`. Leave the second DNS box **empty**, then reconnect each device.
 
 > ⚠️ Only change a router you own or have permission to change. If the Pi is off, devices using it can't load websites. Don't add a backup DNS like `8.8.8.8`: devices will use it and skip Pi-hole.
+
+**Option C: On the RPi Private Router (the Pi is the router).**
+Your Pi already hands out addresses on `wlan1` with dnsmasq, so tell that DHCP server to give clients the Pi as their DNS. In your dnsmasq config, add:
+
+```ini
+# dnsmasq does DHCP only; Pi-hole answers DNS
+port=0
+# hand out the Pi's wlan1 address as DNS, e.g. 192.168.50.1
+dhcp-option=option:dns-server,<pi-wlan1-ip>
+```
+
+Then `sudo systemctl restart dnsmasq` and reconnect a device to the private Wi-Fi.
+
+> ⚠️ **Why `port=0`?** Pi-hole has its own built-in copy of dnsmasq. If your standalone dnsmasq also listens on port 53, the two fight over it and Pi-hole fails to start. Check the winner with `sudo ss -lunp | grep ':53 '`: it should say `pihole-FTL`.
 
 ---
 
@@ -366,7 +380,7 @@ nslookup raspberrypi.com 192.168.1.50
 
 ## Commands to remember
 
-Run these on the Pi with `sudo` in front:
+Run these on the Pi:
 
 | Command | To |
 |---|---|
