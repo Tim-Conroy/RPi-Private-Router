@@ -188,6 +188,16 @@ Campground and hotel Wi-Fi often needs you to accept terms on a web page first. 
 
 Starlink itself has no login page, so on Starlink you'll normally never need `off`.
 
+### Banking on the road
+
+Some banks block or challenge logins from VPN addresses, because a login from a VPN provider in another city looks like fraud. The simplest fix needs no router changes: **use your bank's app over cellular data.**
+
+1. Turn off Wi-Fi on your phone (on an iPhone, tap the Wi-Fi icon in Control Center).
+2. Open your bank's app. It now uses cellular data and never touches the Pi, Starlink or the VPN.
+3. When you're done, turn Wi-Fi back on. The phone rejoins the private Wi-Fi with the VPN and Pi-hole.
+
+While the phone is on Wi-Fi, apps use Wi-Fi, and iPhone can't force a single app onto cellular, so turning Wi-Fi off is the reliable way to do it.
+
 ## 7. Test it (the on-camera demo)
 
 1. **Before:** record your normal Starlink public IP (`https://ifconfig.me` on a phone, before step 3 or during portal mode).
