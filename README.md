@@ -6,13 +6,14 @@ Network-wide ad, tracker, and malware blocking for your home network using [Pi-h
 
 ## Project guides
 
-This repo is part of the **RPi Private Router** series: a Raspberry Pi 5 that joins your home Wi-Fi on `wlan0` and broadcasts its own private, ad-free network on `wlan1`.
+This repo is part of the **RPi Private Router** series: a Raspberry Pi 5 that joins an upstream Wi-Fi on `wlan0` (home, Starlink or a campground) and broadcasts its own private, ad-free network on `wlan1`.
 
 | Step | Guide |
 |---|---|
 | 1 | [Wi-Fi access point capability check](wifi-ap-capability-check.md) |
 | 2 | [Install Pi-hole, step by step](Pi-hole-Installation-Guide.md) |
-| 3 | [WireGuard VPN: Pi-hole and a safe tunnel home, from anywhere](wireguard/README.md) |
+| 3 | [Travel VPN: WireGuard client mode with a kill switch, for Starlink and public Wi-Fi](travel-vpn/README.md) |
+| 4 | [WireGuard home server: connect back to a Pi that stays at home](wireguard/README.md) |
 
 ---
 
@@ -94,9 +95,10 @@ Want more? [The Firebog](https://firebog.net/) keeps a curated directory. Its gr
 
 ## Next: WireGuard VPN
 
-Take your Pi-hole with you. The **[WireGuard VPN guide](wireguard/README.md)** adds a secure tunnel back to your Raspberry Pi router, so your phone or laptop is protected on public Wi-Fi and keeps Pi-hole ad blocking away from home.
+Take your Pi-hole with you. There are two versions, depending on where the Pi lives:
 
-It includes ready-to-run scripts for the server setup and for adding devices with a QR code, plus an example nftables ruleset. The VPN needs exactly one forwarded port (UDP 51820), which fits the "no unnecessary port forwarding" rule above.
+- **[Travel VPN](travel-vpn/README.md)** (the Pi travels with you): every device on your private Wi-Fi goes through an encrypted WireGuard tunnel to a VPN provider or your home, with a kill switch so nothing leaks if the tunnel drops. Works on Starlink, because it only connects *out* and opens no ports.
+- **[Home server](wireguard/README.md)** (the Pi stays at home): your phone or laptop connects back to it from anywhere. It needs exactly one forwarded port (UDP 51820), which fits the "no unnecessary port forwarding" rule above, but it won't work behind CGNAT.
 
 ---
 

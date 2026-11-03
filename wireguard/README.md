@@ -13,7 +13,7 @@ Defaults (the RPi Private Router layout):
 
 Check yours with `ip -br a`. Interface names only appear in `nftables.conf`; the subnet and port are set at the top of both scripts.
 
-> **Where the Pi must be:** a WireGuard *server* needs an inbound port, so this works while the Pi is on your home network. On hotel or public Wi-Fi nobody can forward a port to it.
+> **Where the Pi must be:** a WireGuard *server* needs an inbound port, so this works while the Pi is on your home network. On hotel or public Wi-Fi, or on Starlink (CGNAT), nobody can connect in to it. For a Pi that travels, use the **[travel VPN (client mode)](../travel-vpn/README.md)** instead.
 
 ## 1. Install and start the server
 ```bash
