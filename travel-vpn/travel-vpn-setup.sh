@@ -57,6 +57,14 @@ fi
 # Trixie wg-quick would otherwise need resolvconf.
 echo "==> Writing $CONF"
 (umask 077; grep -vE '^DNS\s*=' "$SRC" > "$CONF")
+chown root:root "$CONF"
+
+# Starlink (and most travel Wi-Fi) puts you behind CGNAT, which forgets idle
+# connections. A keepalive every 25 s stops the tunnel from going silent.
+if ! grep -qE '^PersistentKeepalive\s*=' "$CONF"; then
+  sed -i '/^\[Peer\]/a PersistentKeepalive = 25' "$CONF"
+  echo "==> Added PersistentKeepalive = 25 (keeps the tunnel open through Starlink's CGNAT)"
+fi
 
 (umask 077; cat > "$ENV" <<EOF
 # Read by travel-vpn. Pi-hole's upstream DNS while the tunnel is on:
@@ -83,6 +91,8 @@ fi
 # --- 5. Turn it on, if the kill-switch firewall is already in place --------
 if nft list chain inet filter direct_access > /dev/null 2>&1; then
   /usr/local/sbin/travel-vpn on
+  echo
+  echo "Next: lock the Pi down with  sudo ./harden.sh  then run  sudo travel-vpn check"
 else
   echo
   echo "Next: install the kill-switch firewall from nftables.conf, then run:  sudo travel-vpn on"
