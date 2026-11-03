@@ -166,7 +166,38 @@ ieee80211w=1
 
 Then `sudo systemctl restart hostapd`. Use a password of at least 12 characters.
 
-## 6. Everyday use
+## 6. Connect your iPhone and MacBook
+
+Join the Pi's **private Wi-Fi** (your hostapd network name) as you would any network. Nothing else is required: the VPN, kill switch and Pi-hole work for every device on it. A few Apple settings are worth knowing:
+
+**iCloud Private Relay (normal behavior, not an error).** Pi-hole blocks Private Relay by default, so Apple devices can't send Safari traffic around it. On this network your iPhone or Mac may say the network isn't compatible with Private Relay and switch it off for this network only. That's expected: the router's VPN is now doing that job. To turn it off yourself:
+
+- **iPhone:** Settings → Wi-Fi → tap ⓘ next to your private network → turn off **Limit IP Address Tracking**.
+- **Mac:** System Settings → Network → Wi-Fi → **Details** next to your private network → turn off **Limit IP address tracking**.
+
+**Don't double up on VPNs.** If you also have a VPN app on the iPhone or Mac, turn it off while you're on the Pi's Wi-Fi. The router already encrypts everything, and two tunnels only slow you down. Keep the app for when you're away from the router.
+
+**Private Wi-Fi address.** Leave it on. iPhone and Mac use a different hardware address for each network, which is good for privacy and doesn't affect the router.
+
+### Check it's working
+
+**iPhone (Safari):**
+
+1. Open `https://ifconfig.me`: it shows the VPN server's IP address, not Starlink's.
+2. Open an ad-heavy site: ads are blocked.
+
+**MacBook (Terminal):**
+
+```bash
+curl -s https://ifconfig.me; echo            # the VPN server's IP, not Starlink's
+scutil --dns | grep nameserver | head -2     # the Pi's wlan1 address = Pi-hole
+dig +short doubleclick.net                   # 0.0.0.0 = Pi-hole is blocking
+ipconfig getifaddr en0                        # the Mac's address on the private Wi-Fi
+```
+
+In Pi-hole's Query Log you'll see each device's lookups by its private Wi-Fi address.
+
+## 7. Everyday use
 
 ```bash
 sudo travel-vpn status   # tunnel, kill switch, public IP
@@ -198,11 +229,11 @@ Some banks block or challenge logins from VPN addresses, because a login from a 
 
 While the phone is on Wi-Fi, apps use Wi-Fi, and iPhone can't force a single app onto cellular, so turning Wi-Fi off is the reliable way to do it.
 
-## 7. Test it (the on-camera demo)
+## 8. Test it (the on-camera demo)
 
 1. **Before:** record your normal Starlink public IP (`https://ifconfig.me` on a phone, before step 3 or during portal mode).
 2. `sudo travel-vpn status`: tunnel UP with a recent handshake, kill switch ON, and the public IP is the VPN server's, not Starlink's.
-3. On a phone on the private Wi-Fi, open `https://ifconfig.me`: same VPN IP.
+3. On your iPhone or MacBook on the private Wi-Fi, open `https://ifconfig.me`: same VPN IP.
 4. Open an ad-heavy site: ads blocked, and Pi-hole's Query Log shows the phone's lookups.
 5. **Kill-switch proof:** `sudo systemctl stop wg-quick@wg0`. The phone loses internet instead of falling back to Starlink. Then `sudo travel-vpn on` restores it.
 6. `sudo travel-vpn check`: all PASS.
