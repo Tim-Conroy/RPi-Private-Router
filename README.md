@@ -12,8 +12,10 @@ This repo is part of the **RPi Private Router** series: a Raspberry Pi 5 that jo
 |---|---|
 | 1 | [Wi-Fi access point capability check](wifi-ap-capability-check.md) |
 | 2 | [Install Pi-hole, step by step](Pi-hole-Installation-Guide.md) |
-| 3 | [Travel VPN: WireGuard client mode for Starlink and public Wi-Fi, with a kill switch and security hardening](travel-vpn/README.md) |
-| 4 | [WireGuard home server: connect back to a Pi that stays at home](wireguard/README.md) |
+| 3 | [Private Wi-Fi: hostapd access point on `wlan1`, with Pi-hole handing out addresses](private-wifi-setup.md) |
+| 4 | [Travel VPN: WireGuard client mode for Starlink and public Wi-Fi, with a kill switch and security hardening](travel-vpn/README.md) |
+| 5 | [Startup checklist: confirm everything is running after each power-up](travel-vpn/STARTUP-CHECKLIST.md) |
+| Alt | [WireGuard home server: connect back to a Pi that stays at home](wireguard/README.md) |
 
 ---
 

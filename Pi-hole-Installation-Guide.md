@@ -323,18 +323,19 @@ In the router's DHCP or LAN settings, set the DNS server to `192.168.1.50`. Leav
 > ⚠️ Only change a router you own or have permission to change. If the Pi is off, devices using it can't load websites. Don't add a backup DNS like `8.8.8.8`: devices will use it and skip Pi-hole.
 
 **Option C: On the RPi Private Router (the Pi is the router).**
-Your Pi already hands out addresses on `wlan1` with dnsmasq, so tell that DHCP server to give clients the Pi as their DNS. In your dnsmasq config, add:
+Let **Pi-hole's built-in DHCP server** hand out addresses on the private Wi-Fi (`wlan1`). Devices then automatically use Pi-hole for DNS, and you don't need a separate dnsmasq. Full steps, including the hostapd access point, are in the [private Wi-Fi guide](private-wifi-setup.md). The Pi-hole part:
 
-```ini
-# dnsmasq does DHCP only; Pi-hole answers DNS
-port=0
-# hand out the Pi's wlan1 address as DNS, e.g. 192.168.50.1
-dhcp-option=option:dns-server,<pi-wlan1-ip>
+```bash
+sudo pihole-FTL --config dhcp.start 192.168.50.10
+sudo pihole-FTL --config dhcp.end 192.168.50.200
+sudo pihole-FTL --config dhcp.router 192.168.50.1
+sudo pihole-FTL --config dhcp.netmask 255.255.255.0
+sudo pihole-FTL --config dhcp.active true
 ```
 
-Then `sudo systemctl restart dnsmasq` and reconnect a device to the private Wi-Fi.
+Pi-hole only answers DHCP on the network that matches this range, so it never hands out addresses on your home Wi-Fi or Starlink.
 
-> ⚠️ **Why `port=0`?** Pi-hole has its own built-in copy of dnsmasq. If your standalone dnsmasq also listens on port 53, the two fight over it and Pi-hole fails to start. Check the winner with `sudo ss -lunp | grep ':53 '`: it should say `pihole-FTL`.
+> ⚠️ **Already running a standalone dnsmasq?** Pi-hole has its own built-in copy of dnsmasq, and two copies fight over port 53. Either remove the standalone one and use the Pi-hole DHCP above, or set `port=0` in its config so it does DHCP only (with `dhcp-option=option:dns-server,192.168.50.1`). Check the winner with `sudo ss -lunp | grep ':53 '`: it should say `pihole-FTL`.
 
 ---
 

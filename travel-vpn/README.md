@@ -43,7 +43,24 @@ If your upstream is different (for example `eth0` with Starlink in bypass mode),
 | `harden.sh` | Security hardening: tunnel retry, kernel, SSH, updates, privacy |
 | `travel-vpn.sh` | Installed as the `travel-vpn` command: `on`, `off`, `status`, `check` |
 
-Run everything from the repo, for example `cd ~/RPi-Private-Router/travel-vpn`.
+Run everything from the repo folder. Commands like `sudo cp nftables.conf …` only work from inside it; `cp: cannot stat 'nftables.conf'` means you're in the wrong folder:
+
+```bash
+cd ~
+[ -d RPi-Private-Router ] && (cd RPi-Private-Router && git pull) || git clone https://github.com/Tim-Conroy/RPi-Private-Router.git
+cd ~/RPi-Private-Router/travel-vpn
+ls      # harden.sh  nftables.conf  README.md  travel-vpn-setup.sh  travel-vpn.sh
+```
+
+## Before you start
+
+- [ ] **Pi-hole** installed and blocking ([Pi-hole guide](../Pi-hole-Installation-Guide.md))
+- [ ] **Private Wi-Fi on `wlan1`** working: devices join it and get `192.168.50.x` addresses ([private Wi-Fi guide](../private-wifi-setup.md)). Check with `iw dev wlan1 info | grep type`: it must say `type AP`. If it says `type managed` or `wlan1` is `DOWN`, hostapd isn't running; fix that first.
+- [ ] A **Proton VPN** account (or another provider with WireGuard configs)
+
+You can connect to Starlink (step 1) at any point: `wlan0` just joins a different Wi-Fi, and the tunnel follows. Many people do it last, once the router works at home.
+
+After every power-up, use the **[startup checklist](STARTUP-CHECKLIST.md)** to confirm everything is running.
 
 ---
 
@@ -61,7 +78,7 @@ ip -br a show wlan0                              # should show a 192.168.1.x add
 
 Use your Starlink SSID if you renamed it in the Starlink app.
 
-> ⚠️ **Subnet clash check.** The Starlink router hands out `192.168.1.x` addresses. If your private network on `wlan1` also uses `192.168.1.0/24`, the Pi can't tell the two apart. Move the private network to another subnet, such as `192.168.50.0/24`: change the `wlan1` address and the `dhcp-range` line in your dnsmasq config. `sudo travel-vpn check` (step 5) tests this for you.
+> ⚠️ **Subnet clash check.** The Starlink router hands out `192.168.1.x` addresses. If your private network on `wlan1` also uses `192.168.1.0/24`, the Pi can't tell the two apart. Check with `ip -br a show wlan1` before joining Starlink. The [private Wi-Fi guide](../private-wifi-setup.md) uses `192.168.50.0/24` to avoid this; if yours is on `192.168.1.x`, change the `wlan1` address and Pi-hole's DHCP range to another subnet. `sudo travel-vpn check` (step 5) tests this for you.
 
 Also make sure NetworkManager leaves `wlan1` to hostapd: `nmcli dev status` should show `wlan1` as `unmanaged`.
 
@@ -74,9 +91,10 @@ You need one **full-tunnel** WireGuard config (a `.conf` file). Two options:
 **A. Proton VPN (used in this guide).** Proton VPN Plus is Swiss-based, has an independently audited no-logs policy, and lets you download standard WireGuard configs. Your whole travel router counts as one of its 10 devices.
 
 1. Sign in at `account.protonvpn.com` and go to **Downloads → WireGuard configuration**.
-2. Give the config a name (for example `travelpi`), choose **Router** or **GNU/Linux** as the platform, and pick a server near you.
+2. Give the config a name (for example `travelpi`), choose **GNU/Linux** as the platform (recommended: it includes the `DNS =` line the setup script uses; any platform works on a 64-bit ARM Pi, since the file is plain text), and pick a server near you.
 3. Leave **NetShield** off: Pi-hole already blocks ads, and two blockers make broken sites harder to troubleshoot.
-4. Click **Create**, then **Download**. You get a `.conf` file such as `proton-us-co.conf`.
+4. Click **Create**, then **Download**. You get a `.conf` file; this guide calls it `proton-server.conf`.
+5. Open it and check for three lines: `DNS =` (Proton's is usually `10.2.0.1`), `AllowedIPs = 0.0.0.0/0` (full tunnel), and `Endpoint =` followed by an IP address and port.
 
 Don't install Proton's Linux app on the Pi: it manages its own tunnel and firewall rules, which would fight with the kill switch. Use the app on your iPhone or MacBook when you're away from the router.
 
@@ -95,7 +113,7 @@ Your devices then appear to be at home, which helps with banking and streaming s
 Copy the file to the travel Pi, for example from your computer while it's on the private Wi-Fi:
 
 ```bash
-scp proton-us-co.conf <your_username>@<pi-wlan1-ip>:~/
+scp proton-server.conf <your_username>@192.168.50.1:~/
 ```
 
 > Treat this file like a password: it contains your private key. Don't commit it to GitHub or share it. Delete your downloaded copy once setup is done.
@@ -113,7 +131,11 @@ sudo systemctl enable --now nftables
 sudo systemctl restart nftables
 ```
 
-Do this from a device on the private Wi-Fi or the Pi's own keyboard.
+Do this from a device on the **private Wi-Fi** or the Pi's own keyboard: after this step, SSH from your home or Starlink network is blocked.
+
+1. Join the MacBook to your private Wi-Fi (it has no internet there until step 4 finishes; keep this guide open on your phone over cellular).
+2. `ssh <your_username>@192.168.50.1` and answer `yes` to the host key question.
+3. SSH hangs at "Connecting"? The Mac is still on your home or Starlink Wi-Fi. "REMOTE HOST IDENTIFICATION HAS CHANGED"? Run `ssh-keygen -R 192.168.50.1` on the Mac and connect again.
 
 > ⚠️ **Right after this step, devices on the private Wi-Fi have no internet.** That's the kill switch doing its job: no tunnel yet, so no traffic. Step 4 fixes it.
 
@@ -129,8 +151,19 @@ Do this from a device on the private Wi-Fi or the Pi's own keyboard.
 
 ## 4. Run the setup
 
+> **Already set up WireGuard by hand?** If `/etc/wireguard/wg0.conf` exists from an earlier manual setup (for example with its `DNS =` line commented out), make a working copy for the script and stop the hand-started tunnel first. The script backs up the old `wg0.conf` automatically.
+>
+> ```bash
+> sudo cp /etc/wireguard/wg0.conf ~/proton-server.conf
+> sudo chown $USER: ~/proton-server.conf && chmod 600 ~/proton-server.conf
+> sed -i 's/^# DNS = /DNS = /' ~/proton-server.conf      # restore Proton's DNS line
+> grep -E '^(DNS|AllowedIPs|Endpoint)' ~/proton-server.conf
+> systemctl is-active wg-quick@wg0 || sudo wg-quick down wg0
+> ```
+
 ```bash
-sudo ./travel-vpn-setup.sh ~/proton-us-co.conf
+sudo ./travel-vpn-setup.sh ~/proton-server.conf
+rm ~/proton-server.conf          # the copy holds your private key
 ```
 
 The script:
@@ -267,4 +300,6 @@ While the phone is on Wi-Fi, apps use Wi-Fi, and iPhone can't force a single app
 - **One WireGuard role per Pi.** This setup and the home server version both use `wg0`. Run the server on a Pi at home and this client on the travel Pi.
 - **Switching servers:** download a new config and run `travel-vpn-setup.sh` again with it. The old `wg0.conf` is backed up first.
 - **IPv6:** the kill switch only lets private-network traffic out through the tunnel, so IPv6 can't leak around it either.
+- **An IPv6 "Public IP"** (for example `2a02:…`) from `curl https://ifconfig.me` is normal with Proton: the tunnel has both IPv4 and IPv6 addresses. `travel-vpn status` shows the IPv4 one; for IPv6 run `curl -6 -s https://ifconfig.me`.
+- **Updating the `travel-vpn` command:** after a `git pull`, install the new version with `sudo install -m 755 travel-vpn.sh /usr/local/sbin/travel-vpn`.
 - **Undo hardening:** delete the files listed by `harden.sh`, then `sudo systemctl daemon-reload` and `sudo sysctl --system`.

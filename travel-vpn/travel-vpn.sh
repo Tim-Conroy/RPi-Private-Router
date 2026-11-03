@@ -177,7 +177,7 @@ case "${1:-status}" in
     else
       echo "Kill switch:  ON"
     fi
-    echo "Public IP:    $(curl -s --max-time 5 https://ifconfig.me || echo 'no answer')"
+    echo "Public IPv4:  $(curl -4 -s --max-time 5 https://ifconfig.me || echo 'no answer')"
     ;;
 
   check)

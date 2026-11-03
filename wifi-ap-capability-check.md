@@ -274,7 +274,7 @@ Record the test results here.
 
 ## 11. Next Step
 
-Once the wireless capabilities have been verified, proceed with the TravelPi Router configuration plan:
+Once the wireless capabilities have been verified, set up the access point with the **[private Wi-Fi guide](private-wifi-setup.md)**, then follow the TravelPi Router configuration plan:
 
 1. Confirm the upstream Wi-Fi connection on `wlan0`.
 2. Configure the private access point on `wlan1`.
