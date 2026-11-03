@@ -4,7 +4,7 @@
 #
 # Usage: sudo ./travel-vpn-setup.sh <wireguard-config.conf>
 #
-# The config comes from your VPN provider (Mullvad, Proton VPN, ...) or from
+# The config comes from your VPN provider (Proton VPN, Surfshark, ...) or from
 # wg-add-client.sh on a home WireGuard server (see ../wireguard).
 # Safe to re-run with a new config: the old wg0.conf is backed up first.
 set -euo pipefail

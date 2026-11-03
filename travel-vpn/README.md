@@ -71,7 +71,16 @@ Also make sure NetworkManager leaves `wlan1` to hostapd: `nmcli dev status` shou
 
 You need one **full-tunnel** WireGuard config (a `.conf` file). Two options:
 
-**A. A VPN provider (simplest).** Mullvad, Proton VPN and many others let you download WireGuard configs from their website. Look for a "WireGuard configuration" or "router" download, pick a server near you, and choose IPv4 for the endpoint if asked. A config whose `Endpoint` is an IP address (not a hostname) is the most reliable at boot.
+**A. Proton VPN (used in this guide).** Proton VPN Plus is Swiss-based, has an independently audited no-logs policy, and lets you download standard WireGuard configs. Your whole travel router counts as one of its 10 devices.
+
+1. Sign in at `account.protonvpn.com` and go to **Downloads → WireGuard configuration**.
+2. Give the config a name (for example `travelpi`), choose **Router** or **GNU/Linux** as the platform, and pick a server near you.
+3. Leave **NetShield** off: Pi-hole already blocks ads, and two blockers make broken sites harder to troubleshoot.
+4. Click **Create**, then **Download**. You get a `.conf` file such as `proton-us-co.conf`.
+
+Don't install Proton's Linux app on the Pi: it manages its own tunnel and firewall rules, which would fight with the kill switch. Use the app on your iPhone or MacBook when you're away from the router.
+
+Other providers that offer standard WireGuard configs (Surfshark, Mullvad and others) work the same way with these scripts. A config whose `Endpoint` is an IP address (not a hostname) is the most reliable at boot.
 
 **B. Your own home server.** If you have a home internet connection **without** CGNAT, set up the [home server version](../wireguard/README.md) on a Pi at home, then make a config for the travel Pi:
 
@@ -86,7 +95,7 @@ Your devices then appear to be at home, which helps with banking and streaming s
 Copy the file to the travel Pi, for example from your computer while it's on the private Wi-Fi:
 
 ```bash
-scp mullvad-us-den.conf <your_username>@<pi-wlan1-ip>:~/
+scp proton-us-co.conf <your_username>@<pi-wlan1-ip>:~/
 ```
 
 > Treat this file like a password: it contains your private key. Don't commit it to GitHub or share it. Delete your downloaded copy once setup is done.
@@ -121,7 +130,7 @@ Do this from a device on the private Wi-Fi or the Pi's own keyboard.
 ## 4. Run the setup
 
 ```bash
-sudo ./travel-vpn-setup.sh ~/mullvad-us-den.conf
+sudo ./travel-vpn-setup.sh ~/proton-us-co.conf
 ```
 
 The script:
