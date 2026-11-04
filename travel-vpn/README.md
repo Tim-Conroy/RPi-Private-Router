@@ -66,17 +66,53 @@ After every power-up, use the **[startup checklist](STARTUP-CHECKLIST.md)** to c
 
 ## 1. Connect `wlan0` to Starlink
 
-Join the Starlink router's Wi-Fi with NetworkManager. NetworkManager remembers every network, so the Pi can rejoin your home Wi-Fi when you're back.
+Join the Starlink router's Wi-Fi with NetworkManager. NetworkManager remembers every network, so the Pi can rejoin your home Wi-Fi when you're back. Do this from an SSH session over the private Wi-Fi: switching `wlan0` won't drop it.
+
+**Which name do I use?** The Starlink app shows two names. The **subscription nickname** (for example "JeepStarlink", with "Mini" underneath) only labels your dish in your account: the Pi never uses it. The **Wi-Fi network name** next to the Wi-Fi icon (for example "MyMini", with "0 devices") is the SSID the Pi joins. Tap it in the app to see or change the Wi-Fi password.
+
+**1. Find your Starlink network** (scanning needs `sudo` over SSH; without it you get `not authorized`):
 
 ```bash
-nmcli dev wifi rescan ifname wlan0
-nmcli dev wifi list ifname wlan0                 # find the Starlink SSID
-sudo nmcli dev wifi connect "STARLINK" password "<your-starlink-wifi-password>" ifname wlan0
-sudo nmcli con modify "STARLINK" connection.autoconnect-priority 10   # prefer it when in range
-ip -br a show wlan0                              # should show a 192.168.1.x address
+sudo nmcli dev wifi rescan ifname wlan0
+nmcli dev wifi list ifname wlan0
 ```
 
-Use your Starlink SSID if you renamed it in the Starlink app.
+A Starlink router may also show unnamed `--` networks with similar addresses: ignore them. Not listed? Wait a minute after the dish starts and rescan.
+
+**2. Save it as one connection, with the security type spelled out.** The `read` line asks for the password without showing it or saving it in your shell history:
+
+```bash
+read -rsp "Starlink Wi-Fi password: " PSK; echo
+sudo nmcli con add type wifi ifname wlan0 con-name STARLINK ssid "<your-starlink-wifi-name>" \
+  wifi-sec.key-mgmt wpa-psk wifi-sec.psk "$PSK" \
+  connection.autoconnect yes connection.autoconnect-priority 10
+unset PSK
+```
+
+- The SSID is case-sensitive. Don't type the `< >`.
+- `autoconnect-priority 10` makes the Pi prefer Starlink over your home Wi-Fi (priority 0) whenever both are in range.
+- You can do this step at home before the trip: it only saves the network, and the Pi joins Starlink automatically next time the dish is on.
+
+**3. Connect and confirm:**
+
+```bash
+sudo nmcli con up STARLINK
+nmcli dev status | grep wlan0       # connected  STARLINK
+iw dev wlan0 info | grep ssid       # your Starlink network name
+ip -br a show wlan0                 # a 192.168.1.x address
+nmcli -f NAME,AUTOCONNECT-PRIORITY con show   # one STARLINK at 10, home Wi-Fi at 0
+```
+
+The Starlink app should now show **1 device** on your Wi-Fi network.
+
+> **Warning: "There are N other connections with the name 'STARLINK'"** means earlier attempts left copies. Delete them all, check, then add the one connection again:
+>
+> ```bash
+> nmcli -t -f NAME,UUID con show | grep '^STARLINK:' | cut -d: -f2 | xargs -r -n1 sudo nmcli con delete uuid
+> nmcli con show | grep -i starlink      # must print nothing
+> ```
+>
+> **Error: "802-11-wireless-security.key-mgmt: property is missing"** comes from the `nmcli dev wifi connect` shortcut when the password variable is empty or the router broadcasts mixed WPA2/WPA3 networks. Use the `con add` command above, and delete the half-made profile it left: `sudo nmcli con delete "<your-starlink-wifi-name>"`.
 
 > ⚠️ **Subnet clash check.** The Starlink router hands out `192.168.1.x` addresses. If your private network on `wlan1` also uses `192.168.1.0/24`, the Pi can't tell the two apart. Check with `ip -br a show wlan1` before joining Starlink. The [private Wi-Fi guide](../private-wifi-setup.md) uses `192.168.50.0/24` to avoid this; if yours is on `192.168.1.x`, change the `wlan1` address and Pi-hole's DHCP range to another subnet. `sudo travel-vpn check` (step 5) tests this for you.
 
@@ -292,6 +328,11 @@ While the phone is on Wi-Fi, apps use Wi-Fi, and iPhone can't force a single app
 | Everything breaks on Starlink only | Private network uses `192.168.1.0/24`, same as Starlink | `sudo travel-vpn check` (Network layout); move `wlan1` to another subnet |
 | Can't SSH in from the home network | The firewall only allows SSH from the private Wi-Fi | Join the private Wi-Fi (`wlan1`) and SSH to the Pi's `wlan1` address |
 | Interfaces swapped after reboot | The Alfa adapter came up as `wlan0` | `iw dev`; pin the Alfa's name to its MAC address |
+| `not authorized` on Wi-Fi rescan | Scanning needs admin rights over SSH | `sudo nmcli dev wifi rescan ifname wlan0` |
+| Several `STARLINK` connections | Repeated `con add` attempts | Delete them all (step 1), then add one |
+| `key-mgmt: property is missing` | `nmcli dev wifi connect` couldn't tell the security type | Use `nmcli con add … wifi-sec.key-mgmt wpa-psk` (step 1) |
+| Starlink app shows 0 devices | The Pi hasn't joined yet | `sudo nmcli con up STARLINK`; check the password |
+| SSH hangs at "Connecting" | The Mac switched back to your home Wi-Fi | Rejoin the private Wi-Fi; turn off Auto-Join for home Wi-Fi during setup |
 
 ## Good to know
 
