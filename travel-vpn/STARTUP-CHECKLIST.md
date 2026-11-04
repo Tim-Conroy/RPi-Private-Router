@@ -15,6 +15,8 @@ ssh <your_username>@192.168.50.1
 
 Host key warning after a microSD card swap? On the Mac: `ssh-keygen -R 192.168.50.1`, then connect again and answer `yes`.
 
+SSH hangs at "Connecting"? The Mac has switched back to your home Wi-Fi (common right after a Pi reboot). Rejoin the private Wi-Fi. To stop it switching during setup: System Settings → Wi-Fi → **Details** next to your home network → turn off **Auto-Join** (turn it back on when you're done).
+
 ## 2. Quick check (most days, this is all you need)
 
 ```bash
@@ -68,7 +70,7 @@ curl -4 -s https://ifconfig.me; echo
 **E. Pi-hole**
 
 ```bash
-pihole status
+sudo pihole status
 sudo pihole-FTL --config dns.upstreams
 cat /etc/pihole/dhcp.leases
 ```
@@ -116,7 +118,7 @@ A reboot always turns the kill switch back on.
 | Private Wi-Fi (hostapd) | `sudo systemctl restart hostapd` | `ip -br a show wlan1` |
 | VPN tunnel | `sudo travel-vpn on` | `sudo travel-vpn status` |
 | Firewall | `sudo nft -c -f /etc/nftables.conf && sudo systemctl restart nftables && sudo travel-vpn on` | `sudo travel-vpn check` |
-| Pi-hole | `sudo systemctl restart pihole-FTL` | `pihole status` |
+| Pi-hole | `sudo systemctl restart pihole-FTL` | `sudo pihole status` |
 | Upstream Wi-Fi | `nmcli dev wifi list ifname wlan0`, then `sudo nmcli con up "<network name>"` | `nmcli dev status` |
 
 Still stuck? See why a service failed with `journalctl -u <service> -b --no-pager | tail -20` (for example `hostapd`, `wg-quick@wg0`, `nftables`, `pihole-FTL`).
@@ -134,3 +136,29 @@ sudo reboot              # restart instead
 - [ ] After power-up, wait about 2 minutes, then start again at section 1
 
 Everything (hostapd, firewall, VPN tunnel, Pi-hole) starts on its own at boot, with the kill switch ON.
+
+## 7. NVMe boot and backup router
+
+If your router runs from an NVMe drive (see the [NVMe boot and backup guide](../nvme-boot-and-backup.md)), the microSD card is the spare copy.
+
+**Check which drive it booted from:**
+
+```bash
+findmnt /                                  # /dev/nvme0n1p2 = NVMe (normal)
+sudo rpi-eeprom-config | grep BOOT_ORDER   # 0xf416 = NVMe, then microSD, then USB
+```
+
+- [ ] `findmnt /` shows `nvme0n1p2` (if it shows `mmcblk0p2`, set the boot order: `sudo rpi-eeprom-config --edit`, `BOOT_ORDER=0xf416`, reboot)
+
+**Keep the microSD spare up to date** (after any change, and about once a month):
+
+```bash
+sudo rpi-clone mmcblk0      # only works while booted from the NVMe
+```
+
+**Using the backup Raspberry Pi 5** (only if the main one fails):
+
+- [ ] Shut down the main Pi first: **never run both at once** (same Wi-Fi, same address, same VPN key)
+- [ ] Move the microSD card (and the Alfa adapter, if sharing one) to the backup Pi and power it on
+- [ ] Using a different Alfa? Its address must be listed in `/etc/NetworkManager/conf.d/99-unmanaged-alfa.conf` (`unmanaged-devices=mac:<main-alfa>;mac:<backup-alfa>`)
+- [ ] Run this checklist from section 1
