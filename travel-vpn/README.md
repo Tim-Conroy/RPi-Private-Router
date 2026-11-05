@@ -42,6 +42,8 @@ If your upstream is different (for example `eth0` with Starlink in bypass mode),
 | `travel-vpn-setup.sh` | One-time setup from your WireGuard config file |
 | `harden.sh` | Security hardening: tunnel retry, kernel, SSH, updates, privacy |
 | `travel-vpn.sh` | Installed as the `travel-vpn` command: `on`, `off`, `status`, `check` |
+| `STARTUP-CHECKLIST.md` | What to check after every power-up |
+| `STARLINK-SLIDES.md` | The Starlink slide show, slide by slide, with commands and speaker notes |
 
 Run everything from the repo folder. Commands like `sudo cp nftables.conf …` only work from inside it; `cp: cannot stat 'nftables.conf'` means you're in the wrong folder:
 
