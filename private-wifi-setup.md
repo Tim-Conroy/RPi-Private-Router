@@ -147,14 +147,23 @@ Keep this guide open on your phone over cellular data while the Mac is offline.
 
 ## Optional: WPA3
 
-Once WPA2 works, try WPA3 mixed mode in `/etc/hostapd/hostapd.conf` (needs driver support for SAE):
+Once WPA2 works, you can run WPA2 and WPA3 side by side (transition mode). Your adapter's driver must support SAE and CMAC.
+
+**Full walkthrough:** [Upgrading the hotspot from WPA2 to WPA3](pi5-hotspot-wpa3.md). It covers adapter checks, backups, verifying from a Mac, live client checks and rollback.
+
+The short version: back up `/etc/hostapd/hostapd.conf`, then make the WPA block read:
 
 ```ini
+wpa=2
 wpa_key_mgmt=WPA-PSK SAE
+rsn_pairwise=CCMP
 ieee80211w=1
+sae_pwe=2
 ```
 
-Then `sudo systemctl restart hostapd`. If hostapd fails to start, your adapter's driver doesn't support WPA3 as an access point: put back `wpa_key_mgmt=WPA-PSK`, remove the `ieee80211w` line, and restart.
+To apply it, run `sudo systemctl restart hostapd` if hostapd runs as the standard service. Otherwise, `sudo reboot`. Check which applies with `systemctl status $(pgrep -o hostapd)`.
+
+If the hotspot doesn't come back, your adapter's driver may not support WPA3 as an access point. Restore the backup and apply again.
 
 ## Troubleshooting
 

@@ -2,6 +2,8 @@
 
 A step-by-step record of moving a Raspberry Pi 5 Wi-Fi access point (hostapd on Debian Trixie) from **WPA2-only** to **WPA2/WPA3 transition mode**, including what was discovered along the way and the corrections made after review.
 
+Part of the **RPi Private Router** series. It builds on [Private Wi-Fi: hostapd access point on `wlan1`](private-wifi-setup.md); see the [README](README.md) for the full list of guides.
+
 > **Security note:** Every network name, address, username and password in this document is a placeholder. Never commit your real `hostapd.conf`; it contains your Wi-Fi passphrase. See [Keeping secrets out of this repo](#9-keeping-secrets-out-of-this-repo).
 
 ---
@@ -81,7 +83,7 @@ Each step notes **where** to run it:
 arp -a
 ```
 
-Raspberry Pi 5 network interfaces often have MAC addresses starting with `2c:cf:67` or `d8:3a:dd` (Raspberry Pi vendor prefixes). The `.1` address on most home networks is the **router**, not the Pi.
+Raspberry Pi 5 network interfaces often have MAC addresses starting with `2c:cf:67` or `d8:3a:dd` (Raspberry Pi vendor prefixes). Use the Pi's address on the **home network** (`wlan0`). Its hotspot address (`wlan1`) can only be reached from devices connected to the hotspot itself.
 
 🔵 Then connect (no `sudo`):
 
@@ -299,7 +301,7 @@ What was found, in order, and what it changed.
 | 2 | The hotspot is on `wlan1`, likely a USB adapter | Interface name; Pi 5 built-in Wi-Fi is usually `wlan0` | Good news: the Pi's built-in radio is unreliable for WPA3 in AP mode, while many USB adapters handle it well |
 | 3 | The adapter supports SAE and CMAC | `iw phy ... info \| grep -i` | WPA3 is possible |
 | 4 | SSH to the Pi over the home network was refused | SSH attempt | The Pi's firewall only allows SSH from the private side, so a keyboard and monitor were used |
-| 5 | An early SSH attempt hung | Targeted the `.1` address | That address was the home router, not the Pi; the Pi's real address was found with `arp -a` |
+| 5 | An early SSH attempt from the laptop, on home Wi-Fi, hung | It targeted the Pi's **hotspot** (`wlan1`) address | That address is only reachable from devices on the hotspot; the Pi's home-network (`wlan0`) address was found with `arp -a` |
 | 6 | `systemctl is-active hostapd` → `inactive` | systemctl | hostapd isn't started by the standard unit, so don't trust this check |
 | 7 | NetworkManager lists only the home connection | `nmcli con show --active` | The hotspot isn't managed by NetworkManager |
 | 8 | `wlan1` is `type AP`, `wlan0` is `type managed` | `iw dev` | Confirmed which interface to change and which to leave alone |
@@ -315,6 +317,7 @@ Issues found when reviewing the original working session, and how this document 
 | Issue | Correction |
 |---|---|
 | The adapter check was done **before** getting safe access to the Pi | Reordered: [Step 1](#step-1-get-safe-access-to-the-pi) is now safe access. The checks only read information, but you need to be on the Pi to run them. |
+| A hung SSH attempt was blamed on the address belonging to the home router | It was the Pi's hotspot address, which the laptop couldn't reach from home Wi-Fi. This matches the "SSH hangs at Connecting" row in [private-wifi-setup.md](private-wifi-setup.md#troubleshooting). |
 | `ssh` was run with `sudo` | Don't. `sudo ssh` uses root's keys and `known_hosts`, not yours. |
 | A search for the SSID in `/etc` used case-sensitive `grep -rl` and found nothing | Use `grep -ril` so capitalization differences don't hide a match. |
 | `grep` on `hostapd.conf` without `sudo` | The file can be root-only because it contains the passphrase. Use `sudo grep`. |

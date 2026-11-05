@@ -1,26 +1,29 @@
-# Pi-hole: Blocking Ads and Malicious Domains
+# RPi Private Router: A Secure, Ad-Free Raspberry Pi 5 Wi-Fi Hotspot for Home and Travel
 
-Network-wide ad, tracker, and malware blocking for your home network using [Pi-hole](https://pi-hole.net/).
+A Raspberry Pi 5 that joins an upstream Wi-Fi on `wlan0` (home, Starlink or a campground) and broadcasts its own private, ad-free network on `wlan1`. It's protected with WPA3, filtered by [Pi-hole](https://pi-hole.net/), and can send all traffic through a WireGuard VPN.
 
 > 📺 **New here?** Watch **Part 1 of 2** on my YouTube channel for the full setup: https://youtu.be/I8HdF6vV1IE
 
 ## Project guides
-
-This repo is part of the **RPi Private Router** series: a Raspberry Pi 5 that joins an upstream Wi-Fi on `wlan0` (home, Starlink or a campground) and broadcasts its own private, ad-free network on `wlan1`.
 
 | Step | Guide |
 |---|---|
 | 1 | [Wi-Fi access point capability check](wifi-ap-capability-check.md) |
 | 2 | [Install Pi-hole, step by step](Pi-hole-Installation-Guide.md) |
 | 3 | [Private Wi-Fi: hostapd access point on `wlan1`, with Pi-hole handing out addresses](private-wifi-setup.md) |
-| 4 | [Travel VPN: WireGuard client mode for Starlink and public Wi-Fi, with a kill switch and security hardening](travel-vpn/README.md) |
-| 5 | [Startup checklist: confirm everything is running after each power-up](travel-vpn/STARTUP-CHECKLIST.md) |
-| 6 | [NVMe boot and a backup router: run from an SSD, keep a spare microSD and a second Pi ready](nvme-boot-and-backup.md) |
+| 4 | [Upgrade the private Wi-Fi from WPA2 to WPA3 (WPA2 devices keep working)](pi5-hotspot-wpa3.md) |
+| 5 | [Travel VPN: WireGuard client mode for Starlink and public Wi-Fi, with a kill switch and security hardening](travel-vpn/README.md) |
+| 6 | [Startup checklist: confirm everything is running after each power-up](travel-vpn/STARTUP-CHECKLIST.md) |
+| 7 | [NVMe boot and a backup router: run from an SSD, keep a spare microSD and a second Pi ready](nvme-boot-and-backup.md) |
 | Alt | [WireGuard home server: connect back to a Pi that stays at home](wireguard/README.md) |
 
 ---
 
-## ⚠️ Know this first: Pi-hole blocks domains, not hackers
+## Pi-hole: Blocking Ads and Malicious Domains
+
+Network-wide ad, tracker, and malware blocking for every device on your private Wi-Fi.
+
+### ⚠️ Know this first: Pi-hole blocks domains, not hackers
 
 Pi-hole is a DNS filter. It stops your devices from **reaching** bad places on the internet:
 
@@ -35,9 +38,9 @@ It does **not** stop someone from attacking your network directly. For that you 
 - 🔄 Router firmware updates
 - 🔒 Closed ports (no unnecessary port forwarding)
 
-### Other hardening steps
+#### Other hardening steps
 
-- **Change the router's admin password** from the default, and use WPA2 or WPA3 with a strong Wi-Fi password.
+- **Change the router's admin password** from the default, and use WPA3 (or WPA2/WPA3 transition mode, see [step 4](pi5-hotspot-wpa3.md)) with a strong Wi-Fi password.
 - **Turn off UPnP and WPS** on your router. UPnP lets devices open ports on their own, which undoes "closed ports."
 - **Keep every device updated**: computers, phones, cameras, smart TVs, not just the router.
 - **Never expose your Pi-hole to the internet.** Don't forward port 53 to it. It should only answer devices inside your home network.
@@ -45,11 +48,11 @@ It does **not** stop someone from attacking your network directly. For that you 
 
 ---
 
-## Recommended blocklists
+### Recommended blocklists
 
 Don't stack lots of overlapping ad lists. It slows gravity updates and causes more false positives. A clean setup is **one ad list plus one or two security lists**.
 
-### Ads and trackers (pick ONE)
+#### Ads and trackers (pick ONE)
 
 | List | Notes | URL |
 |---|---|---|
@@ -58,7 +61,7 @@ Don't stack lots of overlapping ad lists. It slows gravity updates and causes mo
 | **OISD Big** | Large, well maintained, very few false positives. | Get the Pi-hole format link from [oisd.nl](https://oisd.nl) |
 | **AdGuard DNS filter** | Solid, conservative option. | `https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt` |
 
-### Malware, phishing, and scams
+#### Malware, phishing, and scams
 
 | List | Notes | URL |
 |---|---|---|
@@ -68,7 +71,7 @@ Don't stack lots of overlapping ad lists. It slows gravity updates and causes mo
 
 Want more? [The Firebog](https://firebog.net/) keeps a curated directory. Its green-ticked lists are the ones considered safe for general use.
 
-### Example setup
+#### Example setup
 
 1. **HaGeZi Pro**: ads, tracking, telemetry
 2. **HaGeZi TIF Medium**: malware, phishing, scams
@@ -76,7 +79,7 @@ Want more? [The Firebog](https://firebog.net/) keeps a curated directory. Its gr
 
 ---
 
-## Adding a blocklist (Pi-hole v6)
+### Adding a blocklist (Pi-hole v6)
 
 1. Open the Pi-hole web interface.
 2. Go to **Lists**.
@@ -89,7 +92,7 @@ Want more? [The Firebog](https://firebog.net/) keeps a curated directory. Its gr
 
 ---
 
-## Limits to be aware of
+### Limits to be aware of
 
 - **YouTube ads** usually can't be blocked by Pi-hole, because YouTube serves ads from the same domains as its videos.
 - If a site or app breaks, check the Pi-hole **Query Log** and add the blocked domain to your **allowlist**.
