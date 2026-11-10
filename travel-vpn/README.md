@@ -5,9 +5,11 @@ Turn the travel Pi into a VPN router: every device on your private Wi-Fi goes th
 ```mermaid
 flowchart LR
     A["Phone, laptop, TV<br/>(private Wi-Fi, wlan1)"] --> B["Travel Pi<br/>Pi-hole + kill switch"]
-    B -->|"encrypted tunnel (wg0)"| C["Starlink router Wi-Fi<br/>(wlan0)"]
+    B --> T["Encrypted tunnel (wg0)<br/><i>wg0 is on the Raspberry Pi</i>"]
+    T --> C["Starlink router Wi-Fi<br/>(wlan0)"]
     C --> D["VPN provider<br/>or your home server"]
     D --> E((Internet))
+    style T fill:#111a2c,stroke:#5fd3a4,color:#ffffff
 ```
 
 > **Which WireGuard guide do I need?**
