@@ -44,7 +44,7 @@ If your upstream is different (for example `eth0` with Starlink in bypass mode),
 | `travel-vpn.sh` | Installed as the `travel-vpn` command: `on`, `off`, `status`, `check` |
 | `STARTUP-CHECKLIST.md` | What to check after every power-up |
 
-Run everything from the repo folder. Commands like `sudo cp nftables.conf …` only work from inside it; `cp: cannot stat 'nftables.conf'` means you're in the wrong folder:
+Run everything from the `~/RPi-Private-Router/travel-vpn` folder on the Pi. Commands like `sudo cp nftables.conf …` only work from inside it; `cp: cannot stat 'nftables.conf'` means you're in the wrong folder:
 
 ```bash
 cd ~
