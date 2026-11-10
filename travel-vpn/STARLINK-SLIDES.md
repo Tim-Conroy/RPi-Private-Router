@@ -177,7 +177,7 @@ sudo travel-vpn check
 | Tunnel UP | Kill switch ON | Proton IP |
 |---|---|---|
 | Shown by `sudo travel-vpn status` | Set in `/etc/nftables.conf` on the RPi | Check on your phone: whatismyipaddress.com |
-| `wg0` has had a recent handshake with Proton's server | If the tunnel drops, traffic stops instead of leaking | The public address is Proton's, not Starlink's |
+| `wg0` <sub>(WireGuard)</sub> has had a recent handshake with Proton's server | If the tunnel drops, traffic stops instead of leaking | The public address is Proton's, not Starlink's |
 
 What `sudo travel-vpn status` prints (your numbers will differ):
 
@@ -187,7 +187,7 @@ Kill switch:  ON
 Public IPv4:  <a Proton address>
 ```
 
-**How the kill switch works:** in [`nftables.conf`](nftables.conf), the `forward` chain has `policy drop`. The only open path for your devices is `wlan1 → wg0` (into the tunnel). Traffic trying to go straight out `wlan1 → wlan0` jumps to the `direct_access` chain, which is empty, so it's dropped. If the tunnel goes down, your devices lose internet instead of leaking over Starlink. `sudo travel-vpn off` adds one `accept` to that chain for captive-portal logins; `sudo travel-vpn on` (or a reboot) empties it again.
+**How the kill switch works:** in [`nftables.conf`](nftables.conf), the `forward` chain has `policy drop`. The only open path for your devices is `wlan1 → wg0` <sub>(WireGuard)</sub> (into the tunnel). Traffic trying to go straight out `wlan1 → wlan0` jumps to the `direct_access` chain, which is empty, so it's dropped. If the tunnel goes down, your devices lose internet instead of leaking over Starlink. `sudo travel-vpn off` adds one `accept` to that chain for captive-portal logins; `sudo travel-vpn on` (or a reboot) empties it again.
 
 **About the public address:** it's the address websites see your traffic coming from. With the tunnel up, that's Proton's exit address, which is often different from the server address in your WireGuard config. That's normal; what matters is that it isn't your Starlink address.
 

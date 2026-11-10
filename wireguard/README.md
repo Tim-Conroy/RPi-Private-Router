@@ -66,6 +66,6 @@ Scan the QR code in the WireGuard app. One client per device; don't share config
 | Symptom | Likely cause |
 |---|---|
 | No handshake | Port forward missing/wrong, CGNAT, wrong endpoint hostname, or the `udp dport 51820` rule missing |
-| Handshake but no internet | Forward rule `wg0 -> wlan0` or masquerade missing; `ip_forward` off |
+| Handshake but no internet | Forward rule `wg0` <sub>(WireGuard)</sub> `-> wlan0` or masquerade missing; `ip_forward` off |
 | Internet works by IP but not names | Pi-hole listening mode is `SINGLE`, or DNS line in client config wrong |
 | Works at home, not on cellular | Testing from inside your home network; test on cellular with Wi-Fi off |

@@ -28,7 +28,7 @@ flowchart LR
 |---|---|
 | Upstream (internet) | `wlan0`: the Pi's built-in Wi-Fi, joined to the Starlink router's Wi-Fi (or campground/hotel Wi-Fi) |
 | Private network | `wlan1`: the Alfa adapter running hostapd |
-| Tunnel | `wg0` |
+| Tunnel | `wg0` <sub>(WireGuard)</sub> |
 
 `wlan0` is the Pi's *interface* (the radio). The network it joins is the *SSID*: your home Wi-Fi at home, the Starlink router's Wi-Fi on the road. Check yours with `iw dev`: `wlan0` should show `type managed`, `wlan1` should show `type AP`.
 
@@ -181,10 +181,10 @@ Do this from a device on the **private Wi-Fi** or the Pi's own keyboard: after t
 | Chain | Rule | Why |
 |---|---|---|
 | `input` | Drop everything except replies and the private Wi-Fi | Nothing on Starlink, a campground network or the tunnel can connect to the Pi: no SSH, no Pi-hole web page, no DNS |
-| `forward` | `wlan1 → wg0` allowed | Devices may use the tunnel |
+| `forward` | `wlan1 → wg0` <sub>(WireGuard)</sub> allowed | Devices may use the tunnel |
 | `forward` | `wlan1 → wlan0` jumps to `direct_access` | Empty = dropped. This is the kill switch |
 | `direct_access` | Empty, or one `accept` in portal mode | `travel-vpn off` opens it for Wi-Fi login pages |
-| `nat` | Masquerade on `wg0` and `wlan0` | Devices share the Pi's address |
+| `nat` | Masquerade on `wg0` <sub>(WireGuard)</sub> and `wlan0` | Devices share the Pi's address |
 
 ## 4. Run the setup
 
@@ -228,7 +228,7 @@ sudo travel-vpn check
 | Ignore ICMP redirects and source routing, log spoofed packets | `/etc/sysctl.d/98-travel-hardening.conf` | Other devices on a shared network can't re-route your traffic |
 | SSH: no root login, 3 tries, keys only if you have one | `/etc/ssh/sshd_config.d/10-travel-hardening.conf` | Protects the private Wi-Fi side too |
 | Automatic security updates | `/etc/apt/apt.conf.d/20auto-upgrades` | Fixes arrive even while you're on the road |
-| Avahi quiet on `wlan0` and `wg0` | `/etc/avahi/avahi-daemon.conf` | Campground neighbors can't see the Pi's name |
+| Avahi quiet on `wlan0` and `wg0` <sub>(WireGuard)</sub> | `/etc/avahi/avahi-daemon.conf` | Campground neighbors can't see the Pi's name |
 
 > **SSH keys first.** If no SSH key is found, password logins stay on. To switch to keys, run `ssh-copy-id <your_username>@<pi-wlan1-ip>` from your computer, then `sudo ./harden.sh` again. Keep your current SSH session open and test a new login before closing it.
 
@@ -323,7 +323,7 @@ While the phone is on Wi-Fi, apps use Wi-Fi, and iPhone can't force a single app
 |---|---|---|
 | No handshake | Venue blocks VPN traffic or has a login page; wrong or expired config | `sudo travel-vpn off`, log in, `on` again; try another server's config |
 | Tunnel fails at boot | `Endpoint` is a hostname and DNS wasn't ready; dish still connecting | Wait 30 s for the auto-retry; use a config with an IP endpoint |
-| Handshake but devices have no internet | `wlan1 -> wg0` forward rule or `wg0` masquerade missing | `sudo nft list ruleset` |
+| Handshake but devices have no internet | `wlan1 -> wg0` <sub>(WireGuard)</sub> forward rule or `wg0` <sub>(WireGuard)</sub> masquerade missing | `sudo nft list ruleset` |
 | Websites by IP work, names don't | Pi-hole upstream not set or not reachable | `sudo pihole-FTL --config dns.upstreams` |
 | Some sites hang or load partly | MTU too large on this link | Add `MTU = 1380` under `[Interface]` in `/etc/wireguard/wg0.conf`, then `sudo travel-vpn on` |
 | Everything breaks on Starlink only | Private network uses `192.168.1.0/24`, same as Starlink | `sudo travel-vpn check` (Network layout); move `wlan1` to another subnet |
@@ -339,7 +339,7 @@ While the phone is on Wi-Fi, apps use Wi-Fi, and iPhone can't force a single app
 
 - **The Pi's own lookups** (for example during `apt update`) use the upstream network's DNS server directly. That's what lets the tunnel find its endpoint at boot. Your devices' lookups always go through Pi-hole and the tunnel.
 - **At home** the same setup works: `wlan0` joins your home Wi-Fi and everything still goes through the VPN. To manage the Pi, join its private Wi-Fi.
-- **One WireGuard role per Pi.** This setup and the home server version both use `wg0`. Run the server on a Pi at home and this client on the travel Pi.
+- **One WireGuard role per Pi.** This setup and the home server version both use `wg0` <sub>(WireGuard)</sub>. Run the server on a Pi at home and this client on the travel Pi.
 - **Switching servers:** download a new config and run `travel-vpn-setup.sh` again with it. The old `wg0.conf` is backed up first.
 - **IPv6:** the kill switch only lets private-network traffic out through the tunnel, so IPv6 can't leak around it either.
 - **An IPv6 "Public IP"** (for example `2a02:…`) from `curl https://ifconfig.me` is normal with Proton: the tunnel has both IPv4 and IPv6 addresses. `travel-vpn status` shows the IPv4 one; for IPv6 run `curl -6 -s https://ifconfig.me`.

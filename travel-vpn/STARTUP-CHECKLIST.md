@@ -1,6 +1,6 @@
 # Travel router startup checklist
 
-Run this after every power-up, top to bottom. It assumes the defaults from the [private Wi-Fi guide](../private-wifi-setup.md) and this folder's [README](README.md): private Wi-Fi on `wlan1` at `192.168.50.1`, Proton VPN on `wg0`.
+Run this after every power-up, top to bottom. It assumes the defaults from the [private Wi-Fi guide](../private-wifi-setup.md) and this folder's [README](README.md): private Wi-Fi on `wlan1` at `192.168.50.1`, Proton VPN on `wg0` <sub>(WireGuard)</sub>.
 
 ## 1. Connect
 
