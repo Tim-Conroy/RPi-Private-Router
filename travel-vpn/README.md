@@ -43,7 +43,7 @@ If your upstream is different (for example `eth0` with Starlink in bypass mode),
 | `harden.sh` | Security hardening: tunnel retry, kernel, SSH, updates, privacy |
 | `travel-vpn.sh` | Installed as the `travel-vpn` command: `on`, `off`, `status`, `check` |
 | `STARTUP-CHECKLIST.md` | What to check after every power-up |
-| `STARLINK-SLIDES.md` | The Starlink slide show, slide by slide, with commands and speaker notes |
+| `STARLINK-SLIDES.md` | The Starlink slide show, slide by slide, with the commands |
 
 Run everything from the repo folder. Commands like `sudo cp nftables.conf …` only work from inside it; `cp: cannot stat 'nftables.conf'` means you're in the wrong folder:
 
