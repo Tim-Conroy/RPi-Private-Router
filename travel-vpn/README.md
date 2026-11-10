@@ -1,10 +1,10 @@
 # Travel VPN: WireGuard client mode for the road (Starlink, campgrounds, hotels)
 
-Turn the travel Pi into a VPN router: every device on your private Wi-Fi goes through an encrypted WireGuard tunnel, with Pi-hole still blocking ads. If the tunnel drops, a **kill switch** blocks traffic instead of letting it leak out unprotected.
+Turn a **Raspberry Pi 5** into a travel VPN router (the "travel Pi" in this guide): every device on your private Wi-Fi goes through an encrypted WireGuard tunnel, with Pi-hole still blocking ads. If the tunnel drops, a **kill switch** blocks traffic instead of letting it leak out unprotected.
 
 ```mermaid
 flowchart LR
-    A["Phone, laptop, TV<br/>(private Wi-Fi, wlan1)"] --> B["Travel Pi<br/>Pi-hole + kill switch<br/><small>(nftables)</small>"]
+    A["Phone, laptop, TV<br/>(private Wi-Fi, wlan1)"] --> B["Raspberry Pi 5<br/>Pi-hole + kill switch<br/><small>(nftables)</small>"]
     B --> T["Encrypted tunnel (wg0)<br/><i>wg0 is on the Raspberry Pi</i>"]
     T --> C["Starlink router Wi-Fi<br/>(wlan0)"]
     C --> D["VPN provider<br/>or your home server"]
