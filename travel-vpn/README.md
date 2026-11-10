@@ -310,9 +310,9 @@ Some banks block or challenge logins from VPN addresses, because a login from a 
 
 While the phone is on Wi-Fi, apps use Wi-Fi, and iPhone can't force a single app onto cellular, so turning Wi-Fi off is the reliable way to do it.
 
-## 8. Test it (the on-camera demo)
+## 8. Test it 
 
-1. **Before:** record your normal Starlink public IP (`https://ifconfig.me` on a phone, before step 3 or during portal mode).
+1.  Starlink public IP : `https://ifconfig.me` on a phone.
 2. `sudo travel-vpn status`: tunnel UP with a recent handshake, kill switch ON, and the public IP is the VPN server's, not Starlink's.
 3. On your iPhone or MacBook on the private Wi-Fi, open `https://ifconfig.me`: same VPN IP.
 4. Open an ad-heavy site: ads blocked, and Pi-hole's Query Log shows the phone's lookups.
