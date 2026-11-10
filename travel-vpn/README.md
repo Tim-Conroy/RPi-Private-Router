@@ -9,7 +9,7 @@ flowchart LR
     T --> C["Starlink router Wi-Fi<br/>(wlan0)"]
     C --> D["VPN provider<br/>or your home server"]
     D --> E((Internet))
-    style T fill:#111a2c,stroke:#5fd3a4,color:#ffffff
+    style T stroke:#0f8a62,stroke-width:2px
 ```
 
 > **Which WireGuard guide do I need?**
