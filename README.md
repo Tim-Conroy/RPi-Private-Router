@@ -13,6 +13,7 @@ A Raspberry Pi 5 that joins an upstream Wi-Fi on `wlan0` (home, Starlink or a ca
 | 3 | [Private Wi-Fi: hostapd access point on `wlan1`, with Pi-hole handing out addresses](private-wifi-setup.md) |
 | 4 | [Upgrade the private Wi-Fi from WPA2 to WPA3 (WPA2 devices keep working)](pi5-hotspot-wpa3.md) |
 | 5 | [Travel VPN: WireGuard client mode for Starlink and public Wi-Fi, with a kill switch and security hardening](travel-vpn/README.md) |
+| 5a | [Connecting to Starlink: join the Starlink Mini's Wi-Fi, profile name vs. Wi-Fi name, fallback to home Wi-Fi](connect-to-starlink/README.md) |
 | 6 | [Startup checklist: confirm everything is running after each power-up](travel-vpn/STARTUP-CHECKLIST.md) |
 | 7 | [NVMe boot and a backup router: run from an SSD, keep a spare microSD and a second Pi ready](nvme-boot-and-backup.md) |
 | Alt | [WireGuard home server: connect back to a Pi that stays at home](wireguard/README.md) |
