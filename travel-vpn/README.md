@@ -73,7 +73,7 @@ After every power-up, use the **[startup checklist](STARTUP-CHECKLIST.md)** to c
 
 Join the Starlink router's Wi-Fi with NetworkManager. NetworkManager remembers every network, so the Pi can rejoin your home Wi-Fi when you're back. Do this from an SSH session over the private Wi-Fi: switching `wlan0` won't drop it.
 
-**Which name do I use?** The Starlink app shows two names. The **subscription nickname** (for example "JeepStarlink", with "Mini" underneath) only labels your dish in your account: the Pi never uses it. The **Wi-Fi network name** next to the Wi-Fi icon (for example "MyMini", with "0 devices") is the SSID the Pi joins. Tap it in the app to see or change the Wi-Fi password.
+**Which name do I use?** The Starlink app shows two names. The **subscription nickname** (shown as `<Your_Subscription_Nickname>`, with "Mini" underneath) only labels your dish in your account: the Pi never uses it. The **Wi-Fi network name** next to the Wi-Fi icon (shown as `<Your_Starlink_SSID>`, with "0 devices") is the SSID the Pi joins. Tap it in the app to see or change the Wi-Fi password.
 
 **1. Find your Starlink network** (scanning needs `sudo` over SSH; without it you get `not authorized`):
 
