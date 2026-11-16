@@ -293,7 +293,7 @@ sudo travel-vpn off      # portal mode, for Wi-Fi login pages
 
 Campground and hotel Wi-Fi often needs you to accept terms on a web page first. The tunnel can't connect until you do, and the kill switch blocks the page, so:
 
-1. Connect the Pi's `wlan0` to the venue's Wi-Fi (as in step 1).
+1. Connect the Pi's `wlan0` to the venue's Wi-Fi (as in step 1, or see [Hotel and Venue Wi-Fi](../hotel-venue-wifi/README.md)).
 2. `sudo travel-vpn off`: the tunnel stops, devices go straight out, and Pi-hole uses the venue's DNS so the login page can appear.
 3. On your phone (on the private Wi-Fi), open any `http://` site, such as `http://neverssl.com`, and complete the login page.
 4. `sudo travel-vpn on`: back to protected.
