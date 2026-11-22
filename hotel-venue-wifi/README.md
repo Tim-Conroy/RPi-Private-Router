@@ -62,7 +62,7 @@ A hotel scan can list a dozen networks. Cross them off in this order:
 
 | What you see | What to do |
 |---|---|
-| Your own private Wi-Fi name | **Skip.** The Pi's built-in radio can hear your Alfa adapter's network too |
+| Your own private Wi-Fi name | **Skip, and never join it from the Pi.** The Pi's built-in radio can hear your Alfa adapter's network too. If `wlan0` joins it, NetworkManager saves it and can rejoin it on its own later, leaving your devices with no internet ([why](../router-connected-to-itself/README.md)) |
 | A name like `Hotel_Admin` or `Staff` with `WPA2` | **Skip.** Staff network |
 | `WPA2 802.1X` under SECURITY | **Skip.** Enterprise login with a username or certificate, often used by a hotel app's auto sign-in. Not a simple password |
 | `--` as the name | **Skip.** Hidden network |
@@ -228,7 +228,7 @@ sudo ls -l /etc/NetworkManager/system-connections/                  # the profil
 sudo grep -v psk= /etc/NetworkManager/system-connections/VENUE.nmconnection   # settings, password hidden
 ```
 
-Done with the venue? Delete the profile so the Pi doesn't keep it:
+Done with the venue? Delete the profile so the Pi doesn't keep it. Fewer saved networks means fewer wrong ones for the Pi to join on its own:
 
 ```bash
 sudo nmcli con delete VENUE
@@ -247,4 +247,5 @@ sudo nmcli con delete VENUE
 | `802-11-wireless-security.key-mgmt: property is missing` | Add `wifi-sec.key-mgmt wpa-psk`, as in 4b |
 | "There are N other connections with the name ..." | Earlier attempts left copies. `nmcli con show` lists them; delete each with `sudo nmcli con delete uuid <UUID>`, then add one fresh profile |
 | Connected, but nothing loads | The venue has a sign-in page. Do step 6 |
+| Nothing loads, and `iw dev wlan0 link` shows your own private Wi-Fi name | `wlan0` joined your own hotspot, not the venue. See [The router connected to itself](../router-connected-to-itself/README.md) |
 | Tunnel won't come back after signing in | `sudo systemctl restart wg-quick@wg0`, wait 15 seconds, then `sudo travel-vpn status` |

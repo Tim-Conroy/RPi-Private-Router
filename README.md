@@ -17,6 +17,7 @@ A Raspberry Pi 5 that joins an upstream Wi-Fi on `wlan0` (home, Starlink or a ca
 | 5b | [Hotel and venue Wi-Fi: find and pick the right network, save it with or without a password, get through sign-in pages](hotel-venue-wifi/README.md) |
 | 6 | [Startup checklist: confirm everything is running after each power-up](travel-vpn/STARTUP-CHECKLIST.md) |
 | 7 | [NVMe boot and a backup router: run from an SSD, keep a spare microSD and a second Pi ready](nvme-boot-and-backup.md) |
+| Fix | [Troubleshooting: the router connected to itself (full Wi-Fi bars, no internet), hostapd vs. NetworkManager, and how to keep it from coming back](router-connected-to-itself/README.md) |
 | Alt | [WireGuard home server: connect back to a Pi that stays at home](wireguard/README.md) |
 
 ---

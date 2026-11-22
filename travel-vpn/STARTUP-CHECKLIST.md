@@ -35,9 +35,12 @@ All good? You're done. Anything wrong? Use section 3 to find which piece is down
 
 ```bash
 nmcli dev status | grep wlan
+iw dev wlan0 link | grep SSID
+ip -br a show wlan0
 ```
 
 - [ ] `wlan0` connected to your upstream network; `wlan1` **unmanaged**
+- [ ] The SSID is your home or Starlink Wi-Fi, **never your own private Wi-Fi**, and `wlan0`'s address is **not** `192.168.50.x`. If it is, `wlan0` joined your own hotspot: see [The router connected to itself](../router-connected-to-itself/README.md)
 
 **B. Private Wi-Fi (`wlan1`, hostapd)**
 
@@ -120,6 +123,7 @@ A reboot always turns the kill switch back on.
 | Firewall | `sudo nft -c -f /etc/nftables.conf && sudo systemctl restart nftables && sudo travel-vpn on` | `sudo travel-vpn check` |
 | Pi-hole | `sudo systemctl restart pihole-FTL` | `sudo pihole status` |
 | Upstream Wi-Fi | `nmcli dev wifi list ifname wlan0`, then `sudo nmcli con up "<network name>"` | `nmcli dev status` |
+| `wlan0` on your own hotspot | `sudo nmcli con delete "<Your_Private_SSID>"`, then `sudo nmcli con up STARLINK ifname wlan0` ([details](../router-connected-to-itself/README.md)) | `iw dev wlan0 link \| grep SSID` |
 
 Still stuck? See why a service failed with `journalctl -u <service> -b --no-pager | tail -20` (for example `hostapd`, `wg-quick@wg0`, `nftables`, `pihole-FTL`).
 

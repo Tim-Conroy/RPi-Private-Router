@@ -120,6 +120,7 @@ Double-check from your phone or laptop on the private Wi-Fi by opening a what-is
 - Both in range: the Pi joins Starlink.
 - Starlink off or packed away: the Pi joins your home Wi-Fi on its own. The VPN works the same either way.
 - **Catch:** if the Pi is already on home Wi-Fi when you power up Starlink, it won't switch by itself. Priority decides which network to join, not whether to leave a working one. Run `sudo nmcli con up <You_Choose_A_Name>`, or reboot the Pi.
+- **Never save your own private Wi-Fi as a profile on the Pi.** The Pi boots in seconds; the Starlink Mini takes a minute or more. If NetworkManager has a profile for your own hotspot, that's the only saved network it sees at first, so `wlan0` joins it and stays there: full bars on your devices, no internet. Test the hotspot from your phone, never from the Pi. Full story and fix: [The router connected to itself](../router-connected-to-itself/README.md).
 
 ## Where the profile is stored
 
@@ -143,6 +144,7 @@ sudo grep -v psk= /etc/NetworkManager/system-connections/<You_Choose_A_Name>.nmc
 | SSH from the Mac hangs | The Mac joined your home Wi-Fi. Turn off **Auto-Join** for it and rejoin the private Wi-Fi |
 | "Host key changed" warning | Run `ssh-keygen -R <pi-address>` on the Mac, then connect again |
 | Pi joined the wrong network | Check the priorities: Starlink 10, home Wi-Fi 0 |
+| Full Wi-Fi bars on your devices, no internet, and `iw dev wlan0 link` shows **your own private Wi-Fi name** | `wlan0` joined your own hotspot. Delete that profile and bring Starlink back up: see [The router connected to itself](../router-connected-to-itself/README.md) |
 | Names resolve but nothing loads, or `apt update` times out | The tunnel stopped passing traffic. Run `sudo systemctl restart wg-quick@wg0`, wait 15 seconds, then `sudo wg show wg0` should show a recent handshake |
 
 > ⚠️ **Subnet clash.** Your private Wi-Fi on `wlan1` must use a different subnet from the one the Starlink router hands out, or the Pi can't tell them apart. `sudo travel-vpn check` tests this for you. Also make sure `nmcli dev status` shows `wlan1` as `unmanaged`, so NetworkManager leaves it to hostapd.

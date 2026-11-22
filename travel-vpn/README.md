@@ -338,11 +338,13 @@ While the phone is on Wi-Fi, apps use Wi-Fi, and iPhone can't force a single app
 | `key-mgmt: property is missing` | `nmcli dev wifi connect` couldn't tell the security type | Use `nmcli con add … wifi-sec.key-mgmt wpa-psk` (step 1) |
 | Starlink app shows 0 devices | The Pi hasn't joined yet | `sudo nmcli con up STARLINK`; check the password |
 | SSH hangs at "Connecting" | The Mac switched back to your home Wi-Fi | Rejoin the private Wi-Fi; turn off Auto-Join for home Wi-Fi during setup |
+| Full Wi-Fi bars on every device, no internet; `ping -c3 -I wlan0 1.1.1.1` says `Destination Host Unreachable` from a `192.168.50.x` address | `wlan0` joined **your own hotspot** because NetworkManager has a saved profile for it. The kill switch is doing its job: no tunnel, so no traffic | `iw dev wlan0 link`; then see [The router connected to itself](../router-connected-to-itself/README.md) |
 
 ## Good to know
 
 - **The Pi's own lookups** (for example during `apt update`) use the upstream network's DNS server directly. That's what lets the tunnel find its endpoint at boot. Your devices' lookups always go through Pi-hole and the tunnel.
 - **At home** the same setup works: `wlan0` joins your home Wi-Fi and everything still goes through the VPN. To manage the Pi, join its private Wi-Fi.
+- **hostapd broadcasts, NetworkManager joins.** hostapd runs the private Wi-Fi on `wlan1` and never saves profiles. NetworkManager runs `wlan0` and saves every network the Pi joins, set to auto-connect. So test your private Wi-Fi from your phone, never by joining it from the Pi: if you do, NetworkManager remembers it and `wlan0` can rejoin your own hotspot at the next boot. See [The router connected to itself](../router-connected-to-itself/README.md).
 - **One WireGuard role per Pi.** This setup and the home server version both use `wg0` <sub>(WireGuard)</sub>. Run the server on a Pi at home and this client on the travel Pi.
 - **Switching servers:** download a new config and run `travel-vpn-setup.sh` again with it. The old `wg0.conf` is backed up first.
 - **IPv6:** the kill switch only lets private-network traffic out through the tunnel, so IPv6 can't leak around it either.
