@@ -222,6 +222,19 @@ sudo nmcli connection modify STARLINK \
 - **Priority 10** means the Pi picks Starlink over any other saved network in range (they default to 0).
 - If your Starlink profile has a different name, use that name instead of `STARLINK`.
 
+Check that both settings stuck:
+
+```bash
+nmcli -g connection.interface-name,connection.autoconnect-priority \
+  con show STARLINK
+```
+
+```
+wlan0:10
+```
+
+`wlan0:10` means the Starlink profile is locked to `wlan0`, with priority 10. `-g` prints only the values you ask for, separated by `:`. No `sudo` needed: it only reads the profile.
+
 ### Step 3: Prove it works
 
 ```bash
