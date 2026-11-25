@@ -19,6 +19,7 @@ A Raspberry Pi 5 that joins an upstream Wi-Fi on `wlan0` (home, Starlink or a ca
 | 7 | [NVMe boot and a backup router: run from an SSD, keep a spare microSD and a second Pi ready](nvme-boot-and-backup.md) |
 | Fix | [Troubleshooting: the router connected to itself (full Wi-Fi bars, no internet), hostapd vs. NetworkManager, and how to keep it from coming back](router-connected-to-itself/README.md) |
 | Alt | [WireGuard home server: connect back to a Pi that stays at home](wireguard/README.md) |
+| Tool | [wifi-radios.sh: one line per Wi-Fi radio with its MAC, driver, phy, mode and NetworkManager state](wifi-radios/README.md) |
 
 ---
 
